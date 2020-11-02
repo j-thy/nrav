@@ -112,31 +112,8 @@ int main(int argc, char *argv[])
                 game_id = stoull(row[2]);
             }
 
-            bool fumble = stoi(row[143]);
-
-            
-            if(fumble)
-            {
-                string team;
-                int yd_line;
-                istringstream iss2(row[279]);
-                iss2 >> team >> yd_line;
-                if(iss2.fail())
-                {
-                    yd_line = team.compare("NA") == 0 ? stoi(row[11]) : stoi(team);
-                }
-                if(team.compare(row[7]) == 0)
-                    yd_line = 100 - yd_line;
-                int yards_gained = stoi(row[11]) - yd_line;
-
-                RushPlay rp(stoi(row[11]), stoi(row[25]), yards_gained, stoi(row[152]), stoi(row[155]), row[45], stoi(row[116]), stoi(row[142]), fumble);
-                rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
-            }
-            else
-            {
-                RushPlay rp(stoi(row[11]), stoi(row[25]), stoi(row[29]), stoi(row[152]), stoi(row[155]), row[45], stoi(row[116]), stoi(row[142]), fumble);
-                rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
-            }
+            RushPlay rp(stoi(row[11]), stoi(row[25]), stoi(row[29]), stoi(row[152]), stoi(row[155]), row[45], stoi(row[116]), stoi(row[142]), stoi(row[143]));
+            rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
         }
     }
 
