@@ -1,0 +1,215 @@
+<title> CS494/594 -- Lab 3: Jgraph</title>
+
+<h1> CS494/594 -- Lab 3: Jgraph</h1>
+<UL> <LI> CS494 / CS594
+<LI> Fall, 2020
+<LI> <a href=http://web.eecs.utk.edu/~jplank>James S. Plank</a>
+<LI> <a href=http://web.eecs.utk.edu/~jplank/plank/classes/cs494/Labs/Lab-3-Jgraph/index.html>This file:
+     <b>http://web.eecs.utk.edu/~jplank/plank/classes/cs494/Labs/Lab-3-Jgraph</b></a>
+<LI> Lab Directory: <b>/home/plank/cs494/Labs/Lab-3-Jgraph</b>
+</UL>
+</h2>
+
+<hr>
+<h2>Not your normal Dr. Plank Lab</h2>
+
+The point of this lab is for you to do something interesting with jgraph, that would likely 
+be very difficult to do with another graphing package.  I will give you options below.  However,
+if you want to do your own thing, now is the time to do it.
+<p>
+Here are the requirements:
+<p>
+<UL>
+<LI> It must be visually interesting.
+<LI> You have to write a program to generate the jgraph.  It can read data from a file, or from
+     the command line, but it has to generate the jgraph, and it can't be trivial.
+     It can be a shell script, as long as it's not a trivial shell script.
+<LI> It shouldn't be one program that generates one graph.  It should do different things depending
+     on the data it reads or the command line arguments.
+<LI> You must have the project vetted by me.  In other words, send me an email with the idea,
+     perhaps with some mockups, and I'll either say, "go ahead" or "try something else."
+</UL>
+
+<hr>
+<h2>What you hand in</h2>
+
+You should submit a tar file of:
+<UL>
+<LI> The source of your program.  No precompiled binaries.
+<LI> A makefile that not only compiles your program (if necessary), but also runs it to create
+     at least five interesting jgraph outputs, which should be either pdf or jpg.
+     You can assume that <b>ps2pdf</b> and <b>convert</b> are installed.
+<LI> A file named <b>index.html</b> that explains what your program does and how it works.
+<LI> If you're worried about whether or not the TA will be able to compile and run your program,
+     schedule a meeting.
+</UL>
+
+The TA should be able to untar, then make, and be looking at PDF or JPG files.
+
+<hr>
+I will include the good projects here when students do them, for subsequent semesters.
+<hr>
+
+<hr>
+<h2><a href=examples.html>Examples of projects that have been done</a></h2>
+
+<hr>
+<h2>Examples of projects that you can do</h2>
+<hr>
+<h3>The Happy QR Code</h3>
+
+I haven't implemented this, but here's the idea.  Download the QR generator from
+<a href=https://github.com/nayuki/QR-Code-generator>https://github.com/nayuki/QR-Code-generator</a>.
+You can use this to generate QR codes into PPM files:
+
+<pre>
+UNIX> <font color=darkred><b>echo "Jim Plank" | QR-Code-generator-master/cpp/make_qr_code | convert - junk.ppm</b></font>
+</pre>
+
+Here's a jpg of the QR code:
+
+<p><center><table border=3><td><img src=img/qr-jp.jpg width=200></td></table></center><p>
+
+Now, write a program that reads the PPM file, and distills the QR code into a grid of squares.
+You'll note that the QR code above is a 21x21 grid of black or white squares.  You can figure out
+how big the squares are by reading those boxes in the three corners.  You don't need a 
+QR reader for this -- just read the PPM.  Have your program
+emit the jgraph for the squares.  However, it should emit a "happy" QR code, where:
+
+<UL>
+<LI> Instead of being black, each colored square can be a different color.  Specify how you
+     want the colors generated on stdin.
+<LI> You can substitute patterns using the pattern feature of jgraph.  Specify the patterns
+     using stdin.
+<LI> You can substitute pictures for some or all
+      ome of the squares (by, for example, turning the picture
+     into a square eps and then plotting the eps rather than the square).  Your QR code should
+     still be readable, since QR codes have redundancy built in.  "Dark" pictures may suffice for
+     the black squares.  
+     Again, do the specification on stdin.
+</UL>
+
+This should work efficiently, even with decently large messages in the QR codes, which make them
+more complex, or large pictures that you should shrink so the eps is not bloated.
+
+<hr>
+<h3>Spirograph</h3>
+
+If you never played with a spirograph game when you were young, you missed out.  
+If you don't know what it is, check out its
+wikipedia page in <a href=https://en.wikipedia.org/wiki/Spirograph>https://en.wikipedia.org/wiki/Spirograph</a>.
+<p>
+Write a program
+<b>spiro</b>, that takes the following command line arguments:
+<UL>
+<LI> The parameters of the inner ring (or outer ring if you want to use one) -- e.g. number of
+teeth, radius.
+<LI> For each "drawing", read the parameters of the drawing on standard input.  E.g.:
+<UL>
+<LI> Color
+<LI> Number of teeth of the wheel.
+<LI> Starting position on the inner wheel.
+<LI> Distance of the hole to the edge of the wheel.
+</UL>
+</UL>
+
+It will then emit jgraph for the drawing -- you'll have to do this by generating lines in jgraph
+that have points really close together, so that they can emulate curves.  
+<p>
+How fun is that?
+
+<hr>
+<h3>I have too much data to plot</h3>
+
+I'll give you the data for graphs like:
+
+<a href=http://web.eecs.utk.edu/~jplank/plank/classes/cs494/494/notes/Jgraph/2019-IJCNN.jpg>
+http://web.eecs.utk.edu/~jplank/plank/classes/cs494/494/notes/Jgraph/2019-IJCNN.jpg</a>
+
+Basically, each data file is 24,000 lines of input where each of these is a data point
+for one of 240 parameter settings.  First you have to cull 10 of the parameter settings, because
+they don't make sense, and then you have to organize the data for each parameter into a tukey
+plot, then create the jgraph with the proper labeling.
+
+
+<hr>
+<h3>Will this help me next week on DraftKings?</h3>
+
+The PGA (professional golf) tour keeps track of four "Shots Gained" statistics:
+
+<UL>
+<LI> "Off-The-Tee" is a measure of how a golfer's score is better than the field due to his shots off the tee.
+<LI> "Approach-The-Green" is a measure of how a golfer's score is better than the field due to his long shots into the green.
+<LI> "Around the green" is a measure of how a golfer's score is better than the field due to his short shots near the green.
+<LI> "Putting" is a measure of how a golfer's score is better than the field due to his putts once
+he is on the green.
+</UL>
+
+The sum of these measures is their "Shots Gained: Total".  For example, let's take a look 
+at the 2020 US open championship.  What I have below is the each web page that has the stats
+for the tournament, plus the stat for five golfers:
+
+<OL>
+<LI> The winner, Bryson DeChambeau, who hits his drives a mile.
+<LI> The runner up, Matthew Wolff, who also hits his drives a mile.
+<LI> Zach Johnson, who came in 8th and is well known for scoring well despite not driving
+     the ball well.
+<LI> Lee Westwood, who came it 8th despite being 100 years old.
+<LI> Siugo Imahira, who came in last of all players who played all four rounds.
+</OL>
+
+The numbers shown are totals for the four rounds of the tournament.
+<UL>
+<LI> SG: Off-The-Tee: <a href=https://www.pgatour.com/content/pgatour/stats/stat.02567.y2021.eon.t026.html>https://www.pgatour.com/content/pgatour/stats/stat.02567.y2021.eon.t026.html</a>
+<pre>
+Bryson DeChambeau    5.328
+Matthew Wolff        3.177
+Lee Westwood         3.371
+Zach Johnson        -1.008
+Shugo Imahira       -4.813
+</pre>
+<p>
+<LI> SG: Approach-The-Green: <a href=https://www.pgatour.com/content/pgatour/stats/stat.02568.y2021.eon.t026.html>https://www.pgatour.com/content/pgatour/stats/stat.02568.y2021.eon.t026.html</a>
+<pre>
+Bryson DeChambeau    7.551
+Matthew Wolff        7.115
+Lee Westwood         1.847
+Zach Johnson         0.532
+Shugo Imahira        3.441
+</pre>
+<p>
+<LI> SG: Around-The-Green: <a href=https://www.pgatour.com/content/pgatour/stats/stat.02569.y2021.eon.t026.html>https://www.pgatour.com/content/pgatour/stats/stat.02569.y2021.eon.t026.html</a>
+<pre>
+Bryson DeChambeau    4.973
+Matthew Wolff        3.480
+Lee Westwood         2.646
+Zach Johnson         1.207
+Shugo Imahira       -1.995
+</pre>
+<p>
+<LI> SG: Putting: <a href=https://www.pgatour.com/content/pgatour/stats/stat.02564.y2021.eon.t026.html>https://www.pgatour.com/content/pgatour/stats/stat.02564.y2021.eon.t026.html</a>
+<pre>
+Bryson DeChambeau    4.492
+Matthew Wolff        2.572
+Lee Westwood         1.480
+Zach Johnson         9.613
+Shugo Imahira       -5.289
+</pre>
+</UL>
+<p>
+
+There's a really nice graphic that you can build to display shots gained,
+where you have four boxes for each golfer, which contains the positive and
+negative stats, and with a black bar for the total.  Here's the graphic
+for those five golfers:
+
+<p><center><table border=3><td><img src=img/sg.jpg width=600></td></table></center><p>
+
+It's a great graphic, because you can easily see how Wolff and DeChambeau excelled in 
+Approach-the-green, while Zach Johnson had a monster tournament with his putter.
+
+<p>
+Your program should take some form of input files that has Shots-Gained statistics, 
+(ideally pulled off the web automatically), and then create this graphic as jgraph.
+Again, this is ideal, but if you have more golfers than will fit on a page, have it
+produce multiple pages.  Of course, have it sort the golfers from best total to worst.
