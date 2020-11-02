@@ -197,7 +197,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
         ofs << "newline gray 1 pts " << x_min << " " << i - 5 << " " << x_max << " " << i - 5 << "\n";
     }
 
-    ofs << "newstring hjc vjc font Times-Italic lgray 1 fontsize 14 x 1.5\n";
+    ofs << "newstring hjc vjc font Times lgray 1 fontsize 14 x 1.5\n";
     double side_length = seg_length + ((double)1/2) * gap_length;
     pt1 = x_min + side_length;
     pt2 = x_max - side_length;
