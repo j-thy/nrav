@@ -11,7 +11,13 @@ using namespace std;
 class RushPlay
 {
 public:
-    RushPlay(int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble);
+    RushPlay(string rusher, int year, int week, string posteam, string posteam_type, string defteam, int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble);
+    string rusher;
+    int year;
+    int week;
+    string posteam;
+    string posteam_type;
+    string defteam;
     int line_of_scrimmage;
     int rush_end;
     int first_down_marker;
@@ -22,8 +28,14 @@ public:
     bool fumble;
 };
 
-RushPlay::RushPlay(int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble)
+RushPlay::RushPlay(string rusher, int year, int week, string posteam, string posteam_type, string defteam, int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble)
 {
+    this->rusher = rusher;
+    this->year = year;
+    this->week = week;
+    this->posteam = posteam;
+    this->posteam_type = posteam_type.compare("home") == 0 ? "vs." : "@";
+    this->defteam = defteam;
     line_of_scrimmage = yardline_100;
     rush_end = yardline_100 - yards_gained;
     first_down_marker = yardline_100 - yards_to_go;
@@ -43,6 +55,7 @@ int main(int argc, char *argv[])
     string line;
     string rusher;
     string temp;
+    string output_file_name;
     unsigned long long game_id = 0;
     int week = 0;
     int input_week = 0;
@@ -51,9 +64,10 @@ int main(int argc, char *argv[])
     bool skipped_labels = false;
     bool found_game = false;
 
-    rusher = argv[1];
-    input_week = stoi(argv[2]);
-    year = stoi(argv[3]);
+    output_file_name = argv[1];
+    rusher = argv[2];
+    input_week = stoi(argv[3]);
+    year = stoi(argv[4]);
 
     ostringstream oss;
 
@@ -112,22 +126,68 @@ int main(int argc, char *argv[])
                 game_id = stoull(row[2]);
             }
 
-            RushPlay rp(stoi(row[11]), stoi(row[25]), stoi(row[29]), stoi(row[152]), stoi(row[155]), row[45], stoi(row[116]), stoi(row[142]), stoi(row[143]));
+            RushPlay rp(rusher, year, input_week, row[7], row[8], row[9], stoi(row[11]), stoi(row[25]), stoi(row[29]), stoi(row[152]), stoi(row[155]), row[45], stoi(row[116]), stoi(row[142]), stoi(row[143]));
             rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
         }
     }
 
     create_jgraph(rushes);
-    // Change later for TA based on jgraph location
-    system("./jgraph/jgraph -P fbf.jgr | ps2pdf - | convert -density 300 - -quality 100 fbf.jpg");
+    
+
+    ostringstream oss2;
+
+    oss2 << "./jgraph/jgraph -P fbf.jgr | ps2pdf - | convert -density 300 - -quality 100 " << output_file_name << ".jpg";
+
+    system(oss2.str().c_str());
 
     remove("fbf.jgr");
     remove("data.csv");
     return 0;
 }
 
+double rgb_converter(double rgb)
+{
+    return rgb / 255;
+}
+
 void create_jgraph(multimap<int, RushPlay> rushes)
-{ // " <<  << "
+{
+    const map<string, string> team_colors
+    {
+        { "ARI", "CARDINALS 151 35 63 0 0 0" },
+        { "ATL", "FALCONS 167 25 48 0 0 0" },
+        { "BAL", "RAVENS 26 25 95 0 0 0" },
+        { "BUF", "BILLS 0 51 141 198 12 48" },
+        { "CAR", "PANTHERS 0 133 202 16 24 32" },
+        { "CHI", "BEARS 11 22 42 200 56 3" },
+        { "CIN", "BENGALS 251 79 20 0 0 0" },
+        { "CLE", "BROWNS 49 29 0 255 60 0" },
+        { "DAL", "COWBOYS 0 34 68 255 255 255" },
+        { "DEN", "BRONCOS 251 79 20 0 34 68" },
+        { "DET", "LIONS 0 118 182 176 183 188" },
+        { "GB", "PACKERS 24 48 40 255 184 28" },
+        { "HOU", "TEXANS 3 32 47 167 25 48" },
+        { "IND", "COLTS 0 44 95 162 170 173" },
+        { "JAX", "JAGUARS 16 24 32 215 162 42" },
+        { "KC", "CHIEFS 227 24 55 255 184 28" },
+        { "LAC", "CHARGERS 0 42 94 255 194 14" },
+        { "LA", "RAMS 0 53 148 255 163 0" },
+        { "LV", "RAIDERS 0 0 0 165 172 175" },
+        { "MIA", "DOLPHINS 0 142 151 252 76 2" },
+        { "MIN", "VIKINGS 79 38 131 255 198 47" },
+        { "NE", "PATRIOTS 0 34 68 198 12 48" },
+        { "NO", "SAINTS 211 188 141 16 24 31" },
+        { "NYG", "GIANTS 1 35 82 163 13 45" },
+        { "NYJ", "JETS 18 87 64 0 0 0" },
+        { "PHI", "EAGLES 0 76 84 165 172 175" },
+        { "PIT", "STEELERS 255 182 18 16 24 32" },
+        { "SEA", "SEAHAWKS 0 34 68 105 190 40" },
+        { "SF", "49ERS 170 0 0 173 153 93" },
+        { "TB", "BUCCANEERS 213 10 10 255 121 0" },
+        { "TEN", "TITANS 12 35 64 75 146 219" },
+        { "WAS", "WASHINGTON 63 16 16 255 182 18" }
+    };
+
     ofstream ofs;
     ofs.open("fbf.jgr");
 
@@ -148,8 +208,32 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double x_mark = (x_max - x_min);
 
     ofs << "newcurve marktype box marksize " << x_mark << " 100 cfill 0.098 0.435 0.047 pts " << x_pts << " 50\n";
-    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill 0.047 0.137 0.251 pts " << x_pts << " 105\n";
-    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill 0.231 0.282 0.173 pts " << x_pts << " -5\n";
+
+    double title_pos = (x_max + x_min)/2;
+    string pos_team_name;
+    string def_team_name;
+    double pos_team_red = 0.0;
+    double pos_team_blue = 0.0;
+    double pos_team_green = 0.0;
+    double pos_team_2nd_red = 0.0;
+    double pos_team_2nd_blue = 0.0;
+    double pos_team_2nd_green = 0.0;
+    double def_team_red = 0.0;
+    double def_team_blue = 0.0;
+    double def_team_green = 0.0;
+    double def_team_2nd_red = 0.0;
+    double def_team_2nd_blue = 0.0;
+    double def_team_2nd_green = 0.0;
+
+    istringstream iss(team_colors.find(rushes.begin()->second.posteam)->second);
+    iss >> pos_team_name >> pos_team_red >> pos_team_blue >> pos_team_green >> pos_team_2nd_red >> pos_team_2nd_blue >> pos_team_2nd_green;
+    istringstream iss2(team_colors.find(rushes.begin()->second.defteam)->second);
+    iss2 >> def_team_name >> def_team_red >> def_team_blue >> def_team_green >> def_team_2nd_red >> def_team_2nd_blue >> def_team_2nd_green;
+
+    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << rgb_converter(def_team_red) << " " << rgb_converter(def_team_blue) << " " << rgb_converter(def_team_green) << " pts " << x_pts << " 105\n";
+    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << rgb_converter(pos_team_red) << " " << rgb_converter(pos_team_blue) << " " << rgb_converter(pos_team_green) << " pts " << x_pts << " -5\n";
+    ofs << "newstring fontsize 24 hjc vjc font Times-Bold lcolor " << rgb_converter(def_team_2nd_red) << " " << rgb_converter(def_team_2nd_blue) << " " << rgb_converter(def_team_2nd_green) << " x " << title_pos << " y 105 : " << def_team_name << "\n";
+    ofs << "newstring fontsize 24 hjc vjc font Times-Bold rotate 180 lcolor " << rgb_converter(pos_team_2nd_red) << " " << rgb_converter(pos_team_2nd_blue) << " " << rgb_converter(pos_team_2nd_green) << " x " << title_pos << " y -5 : " << pos_team_name << "\n";
 
     double field_length = x_max - x_min;
     double line_length = field_length - ((double)2/13) * field_length;
@@ -214,7 +298,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     int x_pos = 1;
     for (multimap<int, RushPlay>::iterator it = rushes.begin(); it != rushes.end(); it++)
     {
-        RushPlay rush = (*it).second;
+        RushPlay rush = it->second;
         double center_pos = 100 - ((double)(rush.line_of_scrimmage + rush.rush_end) / 2);
         double x_size = 0.5;
         double line_width = 0.7;
@@ -266,6 +350,51 @@ void create_jgraph(multimap<int, RushPlay> rushes)
 
         x_pos++;
     }
+
+    RushPlay team = rushes.begin()->second;
+    double legend_pos1 = x_max + (x_max/50);
+    double legend_pos2 = x_max + (x_max/5.4);
+    double legend_pos3 = x_max + (x_max/11);
+
+    ofs << "newstring fontsize 18 hjl vjc font Times-Bold x " << legend_pos1 << " y 99 : NFL Rushing Attempts\n";
+    ofs << "newstring fontsize 18 hjl vjc font Times-Bold x " << legend_pos1 << " y 96 : Visualization\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos1 << " y 93 : Rusher: " << team.rusher << "\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos1 << " y 90 : Season: " << team.year << "\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos1 << " y 87 : Week: " << team.week << "\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos1 << " y 84 : Team: " << team.posteam << " " <<  team.posteam_type << " " <<  team.defteam << "\n";
+
+    ofs << "newstring fontsize 18 hjl vjc font Times-Bold x " << legend_pos1 << " y 65 : Yards Gained\n";
+
+    ofs << "newcurve marktype box marksize 0.5 5 cfill 0 1 0\n";
+    ofs << "pts " << legend_pos3 << " 60\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 61 : Touchdown or\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 59 : 2 Point Conversion\n";
+
+    ofs << "newcurve marktype box marksize 0.5 5 cfill 0.498 1 0\n";
+    ofs << "pts " << legend_pos3 << " 50\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 50 : First Down Converted\n";
+
+    ofs << "newcurve marktype box marksize 0.5 5 cfill 0.996 1 0\n";
+    ofs << "pts " << legend_pos3 << " 40\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 40 : Short of First Down\n";
+
+    ofs << "newcurve marktype box marksize 0.5 5 cfill 1 0.498 0\n";
+    ofs << "pts " << legend_pos3 << " 30\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 30 : Tackled for Loss\n";
+
+    ofs << "newcurve marktype box marksize 0.5 5 cfill 1 0 0\n";
+    ofs << "pts " << legend_pos3 << " 20\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 20 : Fumble Lost\n";
+
+    ofs << "newstring fontsize 18 hjl vjc font Times-Bold x " << legend_pos1 << " y 10 : Line Markers\n";
+
+    ofs << "newcurve marktype box marksize 0.7 0.5 cfill 1 0.784 0.196\n";
+    ofs << "pts " << legend_pos3 << " 5\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 5 : First Down Line\n";
+
+    ofs << "newcurve marktype box marksize 0.7 0.5 cfill 0 0.392 0.863\n";
+    ofs << "pts " << legend_pos3 << " 0\n";
+    ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 0 : Line of Scrimmage\n";
 
     ofs.close();
 }
