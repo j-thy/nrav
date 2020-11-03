@@ -93,6 +93,9 @@ int main(int argc, char *argv[])
 
     ostringstream oss;
 
+    // Make jgraph executable.
+    system("chmod +x ./jgraph/jgraph");
+
     // Runs curl to download the archived csv file of the NFL play-by-play data from nflfastR-data on GitHub.
     oss << "curl -L -o data.csv.gz https://raw.githubusercontent.com/guga31bb/nflfastR-data/master/data/play_by_play_" << year << ".csv.gz";
     system(oss.str().c_str());
