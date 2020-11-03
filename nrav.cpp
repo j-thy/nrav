@@ -1,3 +1,11 @@
+/*
+ *  Jonathan Ting
+ *  Professor Plank
+ *  COSC 494
+ *  12 October 2020
+ *  Lab 3: Jgraph
+ *  Overview: NFL Rushing Attempts Visualization Tool
+ */
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -8,6 +16,7 @@
 #include <cmath>
 using namespace std;
 
+// Contains the data on the rushing plays for a player.
 class RushPlay
 {
 public:
@@ -28,6 +37,7 @@ public:
     bool fumble;
 };
 
+// Sets all the fields of information for the rushing play.
 RushPlay::RushPlay(string rusher, int year, int week, string posteam, string posteam_type, string defteam, int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble)
 {
     this->rusher = rusher;
@@ -63,24 +73,49 @@ int main(int argc, char *argv[])
     bool skipped_labels = false;
     bool found_game = false;
 
+    // Sets the arguments from the command-line.
     output_file_name = argv[1];
     rusher = argv[2];
     input_week = stoi(argv[3]);
     year = stoi(argv[4]);
 
+    if (input_week < 1 || input_week > 21)
+    {
+        fprintf(stderr, "ERROR: Week must be inbetween 1-21 (inclusive).\n");
+        return 1;
+    }
+
+    if (year < 1999)
+    {
+        fprintf(stderr, "ERROR: Play-by-play data only goes back as far as 1999.\n");
+        return 1;
+    }
+
     ostringstream oss;
 
-    oss << "curl -o data.csv.gz https://raw.githubusercontent.com/guga31bb/nflfastR-data/master/data/play_by_play_" << year << ".csv.gz";
-
+    // Runs curl to download the archived csv file of the NFL play-by-play data from nflfastR-data on GitHub.
+    oss << "curl -L -o data.csv.gz https://raw.githubusercontent.com/guga31bb/nflfastR-data/master/data/play_by_play_" << year << ".csv.gz";
     system(oss.str().c_str());
+
+    // Unzips the archived csv file into usable csv data.
     system("gunzip data.csv.gz");
 
+    // Reads in the csv data to begin parsing.
     ifstream fin("data.csv");
 
+    if(fin.fail())
+    {
+        fprintf(stderr, "ERROR: Couldn't find the data file for the given year.\n");
+        remove("data.csv.gz");
+        return 1;
+    }
+
+    // Parses through the csv file for plays belonging to the specified player in the specified week.
     while (getline(fin, line))
     {
         row.clear();
 
+        // Skip the first row of the csv file since it's just labels.
         if(!skipped_labels)
         {
             skipped_labels = true;
@@ -92,13 +127,16 @@ int main(int argc, char *argv[])
         string push_field("");
         bool no_quotes = true;
 
+        // Separate the columns based on the commas.
         while (getline(iss, field, ','))
         {
+            // Logic to properly read in quoted strings which may contain commas.
             if (static_cast<size_t>(std::count(field.begin(), field.end(), '"')) % 2 != 0)
             {
                 no_quotes = !no_quotes;
             }
 
+            // Push each field into a vector.
             push_field += field + (no_quotes ? "" : ",");
 
             if (no_quotes)
@@ -108,42 +146,56 @@ int main(int argc, char *argv[])
             }
         }
 
+        // Since the data is sorted by games, ends parsing once the rows pertaining to the specified game is exhausted.
         if (found_game && stoull(row[2], NULL, 0) != game_id)
             break;
 
-        // Week
+        // Grabs the week of the play from the data.
         week = stoi(row[6]);
 
+        // Ends parsing if the row is past the specified week.
         if(week > input_week)
             break;
 
+        // Stores the play data if the week and the rusher name matches.
         if (week == input_week && rusher.compare(row[171]) == 0)
         {
+            // Marks that the section with the correct game is found.
             if(!found_game)
             {
                 found_game = true;
                 game_id = stoull(row[2]);
             }
 
+            // Stores all the data pertaining to the rush play, keyed and sorted by the line of scrimmage.
             RushPlay rp(rusher, year, input_week, row[7], row[8], row[9], stoi(row[11]), stoi(row[25]), stoi(row[29]), stoi(row[152]), stoi(row[155]), row[45], stoi(row[116]), stoi(row[142]), stoi(row[143]));
             rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
         }
     }
 
+    if(rushes.size() == 0)
+    {
+        fprintf(stderr, "Rushing plays could not be found for the given inputs.\n");
+        remove("data.csv");
+        return 1;
+    }
+
+    // Creates the jgraph using the rushing data.
     create_jgraph(rushes);
     
-
     ostringstream oss2;
 
+    // Runs the jgraph command, creating an image with the given output file name.
     oss2 << "./jgraph/jgraph -P fbf.jgr | ps2pdf - | convert -density 300 - -quality 100 " << output_file_name << ".jpg";
-
     system(oss2.str().c_str());
 
+    // Deletes the temporary jgraph file and csv data after finished and return.
     remove("fbf.jgr");
     remove("data.csv");
     return 0;
 }
 
+// Converts RGB values to a number between 0 and 1 useable by jgraph.
 double rgb_converter(double rgb)
 {
     return rgb / 255;
@@ -151,6 +203,8 @@ double rgb_converter(double rgb)
 
 void create_jgraph(multimap<int, RushPlay> rushes)
 {
+    // A map with data for the endzone decoration.
+    // Contains the team name, rgb value for primary colors, and rgb value for secondary colors.
     const map<string, string> team_colors
     {
         { "ARI", "CARDINALS 151 35 63 0 0 0" },
@@ -187,18 +241,23 @@ void create_jgraph(multimap<int, RushPlay> rushes)
         { "WAS", "WASHINGTON 63 16 16 255 182 18" }
     };
 
+    // Opens an output stream for the temporary jgraph source file.
     ofstream ofs;
     ofs.open("fbf.jgr");
 
+    // Creates a new graph.
     ofs << "newgraph\n";
 
+    // Calculates the number of values on the x axis based on the number of plays.
     double x_max = (double)(rushes.size()) + 0.8;
     double x_min = 0.2;
 
+    // Creates the x axis, which is based on the number of plays.
     ofs << "xaxis\n";
     ofs << "min " << x_min << " max " << x_max << " size 5\n";
     ofs << "nodraw\n";
 
+    // Creates the y axis, which is a constant 100 points, for each yard of the football field.
     ofs << "yaxis\n";
     ofs << "min 0 max 100 size 9\n";
     ofs << "nodraw\n";
@@ -206,6 +265,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double x_pts = (x_max + x_min) / 2;
     double x_mark = (x_max - x_min);
 
+    // Create the green football field.
     ofs << "newcurve marktype box marksize " << x_mark << " 100 cfill 0.098 0.435 0.047 pts " << x_pts << " 50\n";
 
     double title_pos = (x_max + x_min)/2;
@@ -224,11 +284,13 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double def_team_2nd_blue = 0.0;
     double def_team_2nd_green = 0.0;
 
+    // Grab the team name and color data for the home and away team.
     istringstream iss(team_colors.find(rushes.begin()->second.posteam)->second);
     iss >> pos_team_name >> pos_team_red >> pos_team_blue >> pos_team_green >> pos_team_2nd_red >> pos_team_2nd_blue >> pos_team_2nd_green;
     istringstream iss2(team_colors.find(rushes.begin()->second.defteam)->second);
     iss2 >> def_team_name >> def_team_red >> def_team_blue >> def_team_green >> def_team_2nd_red >> def_team_2nd_blue >> def_team_2nd_green;
 
+    // Create the endzones.
     ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << rgb_converter(def_team_red) << " " << rgb_converter(def_team_blue) << " " << rgb_converter(def_team_green) << " pts " << x_pts << " 105\n";
     ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << rgb_converter(pos_team_red) << " " << rgb_converter(pos_team_blue) << " " << rgb_converter(pos_team_green) << " pts " << x_pts << " -5\n";
     ofs << "newstring fontsize 24 hjc vjc font Times-Bold lcolor " << rgb_converter(def_team_2nd_red) << " " << rgb_converter(def_team_2nd_blue) << " " << rgb_converter(def_team_2nd_green) << " x " << title_pos << " y 105 : " << def_team_name << "\n";
@@ -245,6 +307,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double pt5 = pt4 + gap_length;
     double pt6 = x_max;
 
+    // Create the lines on the field with gaps for the numbers every 10 yards..
     for (int i = 10; i < 100; i += 10)
     {
         ofs << "newline gray 1 pts " << pt1 << " " << i << " " << pt2 << " " << i << "\n";
@@ -252,11 +315,13 @@ void create_jgraph(multimap<int, RushPlay> rushes)
         ofs << "newline gray 1 pts " << pt5 << " " << i << " " << pt6 << " " << i << "\n";
     }
 
+    // Create more solid lines so that there is a line every 5 yards.
     for (int i = 10; i < 110; i += 10)
     {
         ofs << "newline gray 1 pts " << x_min << " " << i - 5 << " " << x_max << " " << i - 5 << "\n";
     }
 
+    // Create the yard number markers.
     ofs << "newstring hjc vjc font Times lgray 1 fontsize 14 x 1.5\n";
     double side_length = seg_length + ((double)1/2) * gap_length;
     pt1 = x_min + side_length;
@@ -286,6 +351,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double pt7 = x_max - mark_length;
     double pt8 = x_max;
 
+    // Create the 1-yard line markers.
     for (int i = 1; i < 100; i++)
     {
         ofs << "newline gray 1 pts " << pt1 << " " << i << " " << pt2 << " " << i << "\n";
@@ -294,6 +360,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
         ofs << "newline gray 1 pts " << pt7 << " " << i << " " << pt8 << " " << i << "\n";
     }
 
+    // Create the graph data for each rushing play, sorted by the line of scrimmage.
     int x_pos = 1;
     for (multimap<int, RushPlay>::iterator it = rushes.begin(); it != rushes.end(); it++)
     {
@@ -306,6 +373,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
         double green = 1;
         double blue = 0;
 
+        // Color codes the bar based on whether it resulted in a rushing TD, first down conversion, short of first down, fumble, or tackle for loss.
         if(rush.rush_td || rush.two_point)
         {
             string type = rush.rush_td ? "TD" : "2PT";
@@ -335,12 +403,15 @@ void create_jgraph(multimap<int, RushPlay> rushes)
             blue = 0;
         }
 
+        // Creates the yardage bar.
         ofs << "newcurve marktype box marksize " << x_size << " " << y_size << " cfill " << red << " " << green << " " << blue << "\n";
         ofs << "pts " << x_pos << " " << center_pos << "\n";
 
+        // Creates the line of scrimmage.
         ofs << "newcurve marktype box marksize " << line_width << " 0.5 cfill 0 0.392 0.863\n";
         ofs << "pts " << x_pos << " " << 100 - rush.line_of_scrimmage << "\n";
 
+        // Creates the first down marker.
         if (rush.first_down_marker != 0 && rush.line_of_scrimmage != rush.first_down_marker)
         {
             ofs << "newcurve marktype box marksize " << line_width << " 0.5 cfill 1 0.784 0.196\n";
@@ -355,6 +426,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double legend_pos2 = x_max + (x_max/5.4);
     double legend_pos3 = x_max + (x_max/11);
 
+    // Creates the legend without using the built-in legend options.
     ofs << "newstring fontsize 18 hjl vjc font Times-Bold x " << legend_pos1 << " y 99 : NFL Rushing Attempts\n";
     ofs << "newstring fontsize 18 hjl vjc font Times-Bold x " << legend_pos1 << " y 96 : Visualization\n";
     ofs << "newstring fontsize 14 hjl vjc x " << legend_pos1 << " y 93 : Rusher: " << team.rusher << "\n";
@@ -395,5 +467,6 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     ofs << "pts " << legend_pos3 << " 0\n";
     ofs << "newstring fontsize 14 hjl vjc x " << legend_pos2 << " y 0 : Line of Scrimmage\n";
 
+    // Closes the output file.
     ofs.close();
 }
