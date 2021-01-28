@@ -1,0 +1,168 @@
+<html>
+
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.982.0">
+   <hr>
+   <h2><b>NFL Rushing Attempts Visualization Tool</b></h2>
+
+   <ul>
+      <li>Jonathan Ting</li>
+      <li>Most recent revision: Mon Nov 2 2020</li>
+   </ul>
+   <hr>
+
+   <b>The NFL Rushing Attempts Visualization Tool (NRAV)</b> is a tool for visualizing the yardage gained and success of
+   each play an NFL running back makes in a game. <b>NRAV</b> runs on the command-line and parses through play-by-play
+   data supplied by nflfastR-data, a repository of NFL play-by-play data on GitHub from the 1999 NFL season all the way
+   to the current 2020 NFL season. It overlays the yardage gained for each rushing play of a specified NFL player onto a
+   football field, sorted from closest to the goal line to furthest based on the line of scrimmage. The line of
+   scrimmage and first down marker for each play are also clearly marked, along with any scoring plays and fumbles lost.
+   <p>
+      Each play is represented by a vertical bar, which begins at the line of scrimmage for that play and ends where the
+      rusher is downed, fumbles the ball, or enters the endzone for a score. Each play is color coded for the "success"
+      of the play.
+   </p>
+   <ul>
+      <li>Green: Scoring play - touchdown or successful 2 point conversion</li>
+      <li>Light Green: First down converted</li>
+      <li>Yellow: Short of a first down</li>
+      <li>Orange: Tackled in the backfile for a loss</li>
+      <li>Red: Fumbled the ball, which is recovered by the defending team</li>
+   </ul>
+   <p>
+      You run <b>NRAV</b> with
+
+   </p>
+   <p></p>
+   <center>
+      <table border="3" cellpadding="3">
+         <tbody>
+            <tr>
+               <td>
+                  <pre>nrav [output-file] [rusher-name] [week] [season]</pre>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </center>
+   <p>
+      NRAV takes three input arguments:
+   <ul>
+      <li>The name of the rusher. The name is formatted as "FI.Last_Name" (FI: first initial). Must be the name of an
+         NFL player who has played at least one game in the 1999 NFL season or beyond. For example, Derrick Henry is
+         D.Henry.</li>
+      <li>The week the game being analyzed in the NFL season. Must be between 1 and 21 (inclusive). (the NFL postseason
+         is Week 18-21) For example, Derrick Henry's first game of the season would be Week 1. The AFC Conference
+         Championship would be Week 20. </li>
+      <li>The year of the NFL season. Must be between 1999 and the current NFL season year (inclusive). Keep in mind,
+         the NFL postseason usually takes place in the number year after, but it is still considered part of the
+         previous number year's season.</li>
+   </ul>
+   </p>
+   <p>
+      <b>NRAV</b> makes calls to <b>curl</b> (downloading the raw archived .csv file from GitHub) and <b>gunzip</b>
+      (decompressing the archive into a .csv file), and those programs need to be installed as a prerequisite. The
+      <b>jgraph</b> program also needs to be in a directory called <b>"jgraph"</b>, and the <b>jgraph</b> directory must
+      be in the same directory as the <b>NRAV</b> executable.
+   </p>
+   <p>
+      This program was tested on hydra3.eecs.utk.edu.
+   </p>
+   <hr>
+   <h2>NRAV Examples</h2>
+
+   Here are some examples of NRAV outputs and what they can tell us about a particular running back's performance in a
+   game.
+
+   <pre>UNIX&gt; <font color="darkred"><b>nrav henry D.Henry 14 2018</b></font></pre>
+
+   Here is the jgraph and the JPEG:
+
+   <p></p>
+   <center>
+      <table border="3" cellpadding="3">
+         <tbody>
+            <tr>
+               <td><img src="./img/henry.jpg" width="500"></td>
+            </tr>
+         </tbody>
+      </table>
+   </center>
+
+   <p>
+      You can tell that Derrick Henry, the RB for the Tennessee Titans, in Week 14, 2020 against the Jaguars, was used
+      quite evenly across the field in various yardage situations. He was also able to pull off touchdowns from any part
+      of the field, even having a 99-yard touchdown where he was able to use his stiff arm ability and top end speed to
+      break away when most others could not.
+   </p>
+
+   <p>Next, take a look at Dalvin Cook in Week 1, 2020 against the Packers:</p>
+   <pre>UNIX&gt; <font color="darkred"><b>nrav cook D.Cook 1 2020</b></font></pre>
+
+   <p></p>
+   <center>
+      <table border="3" cellpadding="3">
+         <tbody>
+            <tr>
+               <td><img src="./img/cook.jpg" width="500"></td>
+            </tr>
+         </tbody>
+      </table>
+   </center>
+
+   <p>
+      Dalvin Cook was incredibly effective in the redzone, with 4 out of 5 of his attempts inside the opponent's 5 yard
+      line resulting in a score. Otherwise, he wasn't utilized as much outside the redzone, with the Vikings relying
+      more on the pass game.
+   </p>
+
+   <p>Next, take a look at Ezekiel Elliott in Week 6, 2020 against the Cardinals:</p>
+   <pre>UNIX&gt; <font color="darkred"><b>nrav zeke E.Elliott 6 2020</b></font></pre>
+
+   <p></p>
+   <center>
+      <table border="3" cellpadding="3">
+         <tbody>
+            <tr>
+               <td><img src="./img/zeke.jpg" width="500"></td>
+            </tr>
+         </tbody>
+      </table>
+   </center>
+
+   <p>
+      Ezekiel Elliott, an elite running back in years past, has been struggling this season, particularly with fumbles.
+      The graph shows us that he wasn't able to get any scores, with his only redzone carry resulting in lost yardage.
+      Not only that, he also had a fumble, which he had been struggling with all season. What this graph doesn't show is
+      that he had a second fumble from a shovel pass behind the line of scrimmage. However, because it was a pass, even
+      if Elliott received it behind line of scrimmage, it isn't a run play and doesn't show up on the visualization.
+   </p>
+
+   <p>Lastly, take a look at Rudi Johnson in Week 10, 2003 against the Texans:</p>
+   <pre>UNIX&gt; <font color="darkred"><b>nrav johnson R.Johnson 10 2003</b></font></pre>
+
+   <p></p>
+   <center>
+      <table border="3" cellpadding="3">
+         <tbody>
+            <tr>
+               <td><img src="./img/johnson.jpg" width="500"></td>
+            </tr>
+         </tbody>
+      </table>
+   </center>
+
+   <p>
+      These inputs were chosen more to test the limits of the program. This game is notable in that it has the most
+      rushing attempts by a single rusher in a game of any game in the 1999 NFL season and beyond. It is also an older game, 2003,
+      which tests if older data still accurate. However, it also tells another story: the NFL was far more run-heavy in
+      times past, and comparing the number of attempts in this graph to the ones above really shows how the NFL has
+      become more of a passing league in the modern era.
+   </p>
+
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+g++ -std=c++11 -o parser.o parser.cpp
