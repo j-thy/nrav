@@ -20,7 +20,21 @@ using namespace std;
 class RushPlay
 {
 public:
-    RushPlay(string rusher, int year, int week, string posteam, string posteam_type, string defteam, int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble);
+    RushPlay(string rusher,
+             int year,
+             int week,
+             string posteam,
+             string posteam_type,
+             string defteam,
+             int yardline_100,
+             int yards_to_go,
+             int yards_gained,
+             bool rush_td,
+             bool two_point_attempt,
+             string two_point_res,
+             bool first_down,
+             bool tackled_for_loss,
+             bool fumble);
     string rusher;
     int year;
     int week;
@@ -161,7 +175,7 @@ int main(int argc, char *argv[])
             break;
 
         // Stores the play data if the week and the rusher name matches.
-        if (week == input_week && rusher.compare(row[171]) == 0)
+        if (week == input_week && rusher.compare(row[177]) == 0)
         {
             // Marks that the section with the correct game is found.
             if(!found_game)
@@ -171,7 +185,21 @@ int main(int argc, char *argv[])
             }
 
             // Stores all the data pertaining to the rush play, keyed and sorted by the line of scrimmage.
-            RushPlay rp(rusher, year, input_week, row[7], row[8], row[9], stoi(row[11]), stoi(row[25]), stoi(row[29]), stoi(row[152]), stoi(row[155]), row[45], stoi(row[116]), stoi(row[142]), stoi(row[143]));
+            RushPlay rp(rusher,          // Rusher
+                        year,            // Year
+                        input_week,      // Week
+                        row[7],          // Possession Team
+                        row[8],          // Possession Team Type
+                        row[9],          // Defensive Team
+                        stoi(row[11]),   // Yard Line 100
+                        stoi(row[25]),   // Yards to Go
+                        stoi(row[29]),   // Yards Gained
+                        stoi(row[156]),  // Rush TD
+                        stoi(row[159]),  // Two Point Attempt
+                        row[45],         // Two Point Result
+                        stoi(row[120]),  // First Down
+                        stoi(row[146]),  // Tackled for Loss
+                        stoi(row[147])); // Fumble
             rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
         }
     }
