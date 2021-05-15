@@ -8,18 +8,13 @@ public:
     RushPlay(string rusher,
              int year,
              int week,
-             string posteam,
-             string posteam_type,
-             string defteam,
-             int yardline_100,
-             int yards_to_go,
-             int yards_gained,
-             bool rush_td,
-             bool two_point_attempt,
-             string two_point_res,
-             bool first_down,
-             bool tackled_for_loss,
-             bool fumble);
+             vector<string> &row);
+             
+    double get_center_pos();
+    double get_y_size();
+    int get_y_pos();
+    bool first_down_marker_exists();
+
     string rusher;
     int year;
     int week;
@@ -36,6 +31,5 @@ public:
     bool fumble;
 };
 
-void create_jgraph(multimap<int, RushPlay> rushes);
 double rgb_converter(double rgb);
 void create_jgraph(multimap<int, RushPlay> rushes);

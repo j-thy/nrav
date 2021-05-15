@@ -129,19 +129,8 @@ int main(int argc, char *argv[])
             // Stores all the data pertaining to the rush play, keyed and sorted by the line of scrimmage.
             RushPlay rp(rusher,          // Rusher
                         year,            // Year
-                        input_week,      // Week
-                        row[7],          // Possession Team
-                        row[8],          // Possession Team Type
-                        row[9],          // Defensive Team
-                        stoi(row[11]),   // Yard Line 100
-                        stoi(row[25]),   // Yards to Go
-                        stoi(row[29]),   // Yards Gained
-                        stoi(row[156]),  // Rush TD
-                        stoi(row[159]),  // Two Point Attempt
-                        row[45],         // Two Point Result
-                        stoi(row[120]),  // First Down
-                        stoi(row[146]),  // Tackled for Loss
-                        stoi(row[147])); // Fumble
+                        input_week,
+                        row); // Fumble
             rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
         }
     }

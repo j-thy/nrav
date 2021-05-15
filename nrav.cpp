@@ -2,26 +2,47 @@
 #include <sstream>
 #include <map>
 #include <fstream>
+#include <vector>
 #include "nrav.h"
 using namespace std;
 
 // Sets all the fields of information for the rushing play.
-RushPlay::RushPlay(string rusher, int year, int week, string posteam, string posteam_type, string defteam, int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble)
+RushPlay::RushPlay(string rusher, int year, int week, vector<string> &row)
 {
     this->rusher = rusher;
     this->year = year;
     this->week = week;
-    this->posteam = posteam;
-    this->posteam_type = posteam_type.compare("home") == 0 ? "vs." : "@";
-    this->defteam = defteam;
-    line_of_scrimmage = yardline_100;
-    rush_end = yardline_100 - yards_gained;
-    first_down_marker = yardline_100 - yards_to_go;
-    this->rush_td = rush_td;
-    two_point = (two_point_attempt && two_point_res.compare("success") == 0) ? true : false;
-    this->first_down = first_down;
-    this->tackled_for_loss = tackled_for_loss;
-    this->fumble = fumble;
+    posteam = row[7];
+    posteam_type = row[8].compare("home") == 0 ? "vs." : "@";
+    defteam = row[9];
+    line_of_scrimmage = stoi(row[11]);
+    rush_end = line_of_scrimmage - stoi(row[29]);
+    first_down_marker = line_of_scrimmage - stoi(row[25]);
+    rush_td = stoi(row[156]);
+    two_point = (stoi(row[159]) && row[45].compare("success") == 0) ? true : false;
+    first_down = stoi(row[120]);
+    tackled_for_loss = stoi(row[146]);
+    fumble = stoi(row[147]);
+}
+
+double RushPlay::get_center_pos()
+{
+    return 100 - ((double)(line_of_scrimmage + rush_end) / 2);
+}
+
+double RushPlay::get_y_size()
+{
+    return abs(line_of_scrimmage - rush_end);
+}
+
+int RushPlay::get_y_pos()
+{
+    return rush_end > line_of_scrimmage ? 100 - rush_end - 1 : 100 - rush_end + 1;;
+}
+
+bool RushPlay::first_down_marker_exists()
+{
+    return first_down_marker != 0 && line_of_scrimmage != first_down_marker;
 }
 
 // Converts RGB values to a number between 0 and 1 useable by jgraph.
@@ -194,10 +215,10 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     for (multimap<int, RushPlay>::iterator it = rushes.begin(); it != rushes.end(); it++)
     {
         RushPlay rush = it->second;
-        double center_pos = 100 - ((double)(rush.line_of_scrimmage + rush.rush_end) / 2);
+        double center_pos = rush.get_center_pos();
         double x_size = 0.5;
         double line_width = 0.7;
-        double y_size = abs(rush.line_of_scrimmage - rush.rush_end);
+        double y_size = rush.get_y_size();
         double red = 0.996;
         double green = 1;
         double blue = 0;
@@ -219,7 +240,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
         }
         else if(rush.fumble)
         {
-            int y_pos = rush.rush_end > rush.line_of_scrimmage ? 100 - rush.rush_end - 1 : 100 - rush.rush_end + 1;
+            int y_pos = rush.get_y_pos();
             ofs << "newstring hjc vjc font Helvetica-Bold lcolor 1 0 0 fontsize 8 x " << x_pos << " y " << y_pos << " : FUM\n";
             red = 1;
             green = 0;
@@ -241,7 +262,7 @@ void create_jgraph(multimap<int, RushPlay> rushes)
         ofs << "pts " << x_pos << " " << 100 - rush.line_of_scrimmage << "\n";
 
         // Creates the first down marker.
-        if (rush.first_down_marker != 0 && rush.line_of_scrimmage != rush.first_down_marker)
+        if (rush.first_down_marker_exists())
         {
             ofs << "newcurve marktype box marksize " << line_width << " 0.5 cfill 1 0.784 0.196\n";
             ofs << "pts " << x_pos << " " << 100 - rush.first_down_marker << "\n";
