@@ -9,47 +9,16 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <string>
 #include <vector>
 #include <algorithm>
+#include <string>
 #include <map>
 #include <cmath>
+#include "nrav.h"
 using namespace std;
 
 // Contains the data on the rushing plays for a player.
-class RushPlay
-{
-public:
-    RushPlay(string rusher,
-             int year,
-             int week,
-             string posteam,
-             string posteam_type,
-             string defteam,
-             int yardline_100,
-             int yards_to_go,
-             int yards_gained,
-             bool rush_td,
-             bool two_point_attempt,
-             string two_point_res,
-             bool first_down,
-             bool tackled_for_loss,
-             bool fumble);
-    string rusher;
-    int year;
-    int week;
-    string posteam;
-    string posteam_type;
-    string defteam;
-    int line_of_scrimmage;
-    int rush_end;
-    int first_down_marker;
-    bool rush_td;
-    bool two_point;
-    bool first_down;
-    bool tackled_for_loss;
-    bool fumble;
-};
+
 
 // Sets all the fields of information for the rushing play.
 RushPlay::RushPlay(string rusher, int year, int week, string posteam, string posteam_type, string defteam, int yardline_100, int yards_to_go, int yards_gained, bool rush_td, bool two_point_attempt, string two_point_res, bool first_down, bool tackled_for_loss, bool fumble)
@@ -70,7 +39,6 @@ RushPlay::RushPlay(string rusher, int year, int week, string posteam, string pos
     this->fumble = fumble;
 }
 
-void create_jgraph(multimap<int, RushPlay> rushes);
 
 int main(int argc, char *argv[])
 {
