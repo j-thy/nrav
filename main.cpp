@@ -51,23 +51,20 @@ int main(int argc, char *argv[])
     ostringstream oss;
 
     // Make jgraph executable.
-
     if (access("jgraph/jgraph", X_OK))
     {
-        printf("Making jgraph executable...");
+        printf("Making jgraph executable...\n");
         chmod("jgraph/jgraph", S_IXUSR | S_IXGRP | S_IXOTH);
-    }
-    else
-    {
-        printf("Already executable...");
     }
 
     // Runs curl to download the archived csv file of the NFL play-by-play data from nflfastR-data on GitHub.
+    printf("Downloading data for the %d season...\n", year);
     oss << "curl -s -S -L -o data.csv.gz https://raw.githubusercontent.com/guga31bb/nflfastR-data/master/data/play_by_play_" << year << ".csv.gz";
     system(oss.str().c_str());
 
     // Unzips the archived csv file into usable csv data.
-    system("gunzip data.csv.gz");
+    printf("Unzipping data...\n");
+    system("gunzip -f data.csv.gz");
 
     // Reads in the csv data to begin parsing.
     ifstream fin("data.csv");
@@ -80,6 +77,7 @@ int main(int argc, char *argv[])
     }
 
     // Parses through the csv file for plays belonging to the specified player in the specified week.
+    printf("Parsing data for rushing plays from %s in week %d of the %d NFL season...\n", rusher.c_str(), input_week, year);
     parse_data(rushes, fin, input_week, rusher, year);
 
     if (rushes.size() == 0)
@@ -90,7 +88,8 @@ int main(int argc, char *argv[])
     }
 
     // Make jgraph executable.
-    system("curl -L -o team_data.csv https://raw.githubusercontent.com/nflverse/nflfastR-data/master/teams_colors_logos.csv");
+    printf("Downloading team data...\n");
+    system("curl -s -S -L -o team_data.csv https://raw.githubusercontent.com/nflverse/nflfastR-data/master/teams_colors_logos.csv");
 
     // Reads in the csv data to begin parsing.
     ifstream fin2("team_data.csv");
@@ -98,6 +97,7 @@ int main(int argc, char *argv[])
     parse_team_details(team_details, fin2);
 
     // Creates the jgraph using the rushing data.
+    printf("Creating the graph...\n");
     create_jgraph(rushes, team_details);
 
     ostringstream oss2;
@@ -107,7 +107,10 @@ int main(int argc, char *argv[])
     system(oss2.str().c_str());
 
     // Deletes the temporary jgraph file and csv data after finished and return.
+    printf("Cleaning up...\n");
     remove("fbf.jgr");
     remove("data.csv");
+
+    printf("Finished creating the graph at %s.jpg.\n", output_file.c_str());
     return 0;
 }
