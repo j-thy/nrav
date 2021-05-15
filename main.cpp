@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "nrav.h"
 
 int main(int argc, char *argv[])
@@ -50,11 +51,19 @@ int main(int argc, char *argv[])
     ostringstream oss;
 
     // Make jgraph executable.
-    chmod("jgraph/jgraph", S_IXUSR | S_IXGRP | S_IXOTH);
 
+    if (access("jgraph/jgraph", X_OK))
+    {
+        printf("Making jgraph executable...");
+        chmod("jgraph/jgraph", S_IXUSR | S_IXGRP | S_IXOTH);
+    }
+    else
+    {
+        printf("Already executable...");
+    }
 
     // Runs curl to download the archived csv file of the NFL play-by-play data from nflfastR-data on GitHub.
-    oss << "curl -L -o data.csv.gz https://raw.githubusercontent.com/guga31bb/nflfastR-data/master/data/play_by_play_" << year << ".csv.gz";
+    oss << "curl -s -S -L -o data.csv.gz https://raw.githubusercontent.com/guga31bb/nflfastR-data/master/data/play_by_play_" << year << ".csv.gz";
     system(oss.str().c_str());
 
     // Unzips the archived csv file into usable csv data.
