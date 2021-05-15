@@ -3,6 +3,11 @@
 #include <map>
 #include <fstream>
 #include <vector>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <map>
+#include <algorithm>
 #include "nrav.h"
 using namespace std;
 
@@ -46,51 +51,38 @@ bool RushPlay::first_down_marker_exists()
 }
 
 // Converts RGB values to a number between 0 and 1 useable by jgraph.
-double rgb_converter(double rgb)
+double get_rgb(char rgb, string hex_str)
 {
-    return rgb / 255;
+    stringstream ss;
+    string rgb_str;
+    int val = 0;
+
+    switch(rgb)
+    {
+        case 'r':
+            rgb_str = hex_str.substr(1, 2);
+            ss << rgb_str;
+            ss >> hex >> val;
+            break;
+        case 'g':
+            rgb_str = hex_str.substr(3, 2);
+            ss << rgb_str;
+            ss >> hex >> val;
+            break;
+        case 'b':
+            rgb_str = hex_str.substr(5, 2);
+            ss << rgb_str;
+            ss >> hex >> val;
+            break;
+        default:
+            val = 0.0;
+    }
+
+    return (double)val / 255;
 }
 
-void create_jgraph(multimap<int, RushPlay> rushes)
+void create_jgraph(multimap<int, RushPlay>& rushes, map<string, vector<string> >& team_details)
 {
-    // A map with data for the endzone decoration.
-    // Contains the team name, rgb value for primary colors, and rgb value for secondary colors.
-    const map<string, string> team_colors
-    {
-        { "ARI", "CARDINALS 151 35 63 0 0 0" },
-        { "ATL", "FALCONS 167 25 48 0 0 0" },
-        { "BAL", "RAVENS 26 25 95 0 0 0" },
-        { "BUF", "BILLS 0 51 141 198 12 48" },
-        { "CAR", "PANTHERS 0 133 202 16 24 32" },
-        { "CHI", "BEARS 11 22 42 200 56 3" },
-        { "CIN", "BENGALS 251 79 20 0 0 0" },
-        { "CLE", "BROWNS 49 29 0 255 60 0" },
-        { "DAL", "COWBOYS 0 34 68 255 255 255" },
-        { "DEN", "BRONCOS 251 79 20 0 34 68" },
-        { "DET", "LIONS 0 118 182 176 183 188" },
-        { "GB", "PACKERS 24 48 40 255 184 28" },
-        { "HOU", "TEXANS 3 32 47 167 25 48" },
-        { "IND", "COLTS 0 44 95 162 170 173" },
-        { "JAX", "JAGUARS 16 24 32 215 162 42" },
-        { "KC", "CHIEFS 227 24 55 255 184 28" },
-        { "LAC", "CHARGERS 0 42 94 255 194 14" },
-        { "LA", "RAMS 0 53 148 255 163 0" },
-        { "LV", "RAIDERS 0 0 0 165 172 175" },
-        { "MIA", "DOLPHINS 0 142 151 252 76 2" },
-        { "MIN", "VIKINGS 79 38 131 255 198 47" },
-        { "NE", "PATRIOTS 0 34 68 198 12 48" },
-        { "NO", "SAINTS 211 188 141 16 24 31" },
-        { "NYG", "GIANTS 1 35 82 163 13 45" },
-        { "NYJ", "JETS 18 87 64 0 0 0" },
-        { "PHI", "EAGLES 0 76 84 165 172 175" },
-        { "PIT", "STEELERS 255 182 18 16 24 32" },
-        { "SEA", "SEAHAWKS 0 34 68 105 190 40" },
-        { "SF", "49ERS 170 0 0 173 153 93" },
-        { "TB", "BUCCANEERS 213 10 10 255 121 0" },
-        { "TEN", "TITANS 12 35 64 75 146 219" },
-        { "WAS", "WASHINGTON 63 16 16 255 182 18" }
-    };
-
     // Opens an output stream for the temporary jgraph source file.
     ofstream ofs;
     ofs.open("fbf.jgr");
@@ -121,6 +113,8 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double title_pos = (x_max + x_min)/2;
     string pos_team_name;
     string def_team_name;
+    string pos_team_abbr;
+    string def_team_abbr;
     double pos_team_red = 0.0;
     double pos_team_blue = 0.0;
     double pos_team_green = 0.0;
@@ -135,16 +129,32 @@ void create_jgraph(multimap<int, RushPlay> rushes)
     double def_team_2nd_green = 0.0;
 
     // Grab the team name and color data for the home and away team.
-    istringstream iss(team_colors.find(rushes.begin()->second.posteam)->second);
-    iss >> pos_team_name >> pos_team_red >> pos_team_blue >> pos_team_green >> pos_team_2nd_red >> pos_team_2nd_blue >> pos_team_2nd_green;
-    istringstream iss2(team_colors.find(rushes.begin()->second.defteam)->second);
-    iss2 >> def_team_name >> def_team_red >> def_team_blue >> def_team_green >> def_team_2nd_red >> def_team_2nd_blue >> def_team_2nd_green;
+
+    pos_team_abbr = rushes.begin()->second.posteam;
+    pos_team_name = team_details[pos_team_abbr][2];
+    transform(pos_team_name.begin(), pos_team_name.end(), pos_team_name.begin(), ::toupper);
+    pos_team_red = get_rgb('r', team_details[pos_team_abbr][3]);
+    pos_team_green = get_rgb('g', team_details[pos_team_abbr][3]);
+    pos_team_blue = get_rgb('b', team_details[pos_team_abbr][3]);
+    pos_team_2nd_red = get_rgb('r', team_details[pos_team_abbr][4]);
+    pos_team_2nd_green = get_rgb('g', team_details[pos_team_abbr][4]);
+    pos_team_2nd_blue = get_rgb('b', team_details[pos_team_abbr][4]);
+
+    def_team_abbr = rushes.begin()->second.defteam;
+    def_team_name = team_details[def_team_abbr][2];
+    transform(def_team_name.begin(), def_team_name.end(), def_team_name.begin(), ::toupper);
+    def_team_red = get_rgb('r', team_details[def_team_abbr][3]);
+    def_team_green = get_rgb('g', team_details[def_team_abbr][3]);
+    def_team_blue = get_rgb('b', team_details[def_team_abbr][3]);
+    def_team_2nd_red = get_rgb('r', team_details[def_team_abbr][4]);
+    def_team_2nd_green = get_rgb('g', team_details[def_team_abbr][4]);
+    def_team_2nd_blue = get_rgb('b', team_details[def_team_abbr][4]);
 
     // Create the endzones.
-    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << rgb_converter(def_team_red) << " " << rgb_converter(def_team_blue) << " " << rgb_converter(def_team_green) << " pts " << x_pts << " 105\n";
-    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << rgb_converter(pos_team_red) << " " << rgb_converter(pos_team_blue) << " " << rgb_converter(pos_team_green) << " pts " << x_pts << " -5\n";
-    ofs << "newstring fontsize 24 hjc vjc font Times-Bold lcolor " << rgb_converter(def_team_2nd_red) << " " << rgb_converter(def_team_2nd_blue) << " " << rgb_converter(def_team_2nd_green) << " x " << title_pos << " y 105 : " << def_team_name << "\n";
-    ofs << "newstring fontsize 24 hjc vjc font Times-Bold rotate 180 lcolor " << rgb_converter(pos_team_2nd_red) << " " << rgb_converter(pos_team_2nd_blue) << " " << rgb_converter(pos_team_2nd_green) << " x " << title_pos << " y -5 : " << pos_team_name << "\n";
+    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << def_team_red << " " << def_team_green << " " << def_team_blue << " pts " << x_pts << " 105\n";
+    ofs << "newcurve marktype box marksize " << x_mark << " 10 cfill " << pos_team_red << " " << pos_team_green << " " << pos_team_blue << " pts " << x_pts << " -5\n";
+    ofs << "newstring fontsize 24 hjc vjc font Times-Bold lcolor " << def_team_2nd_red << " " << def_team_2nd_green << " " << def_team_2nd_blue << " x " << title_pos << " y 105 : " << def_team_name << "\n";
+    ofs << "newstring fontsize 24 hjc vjc font Times-Bold rotate 180 lcolor " << pos_team_2nd_red << " " << pos_team_2nd_green << " " << pos_team_2nd_blue << " x " << title_pos << " y -5 : " << pos_team_name << "\n";
 
     double field_length = x_max - x_min;
     double line_length = field_length - ((double)2/13) * field_length;
@@ -319,4 +329,116 @@ void create_jgraph(multimap<int, RushPlay> rushes)
 
     // Closes the output file.
     ofs.close();
+}
+
+void parse_data(multimap<int, RushPlay>& rushes, ifstream& fin, int input_week, string rusher, int year)
+{
+    vector<string> row;
+    string line;
+    bool skipped_labels = false;
+    bool found_game = false;
+    unsigned long long game_id = 0;
+    int week = 0;
+
+    // Parses through the csv file for plays belonging to the specified player in the specified week.
+    while (getline(fin, line))
+    {
+        row.clear();
+
+        // Skip the first row of the csv file since it's just labels.
+        if(!skipped_labels)
+        {
+            skipped_labels = true;
+            continue;
+        }
+
+        istringstream iss(line);
+        string field;
+        string push_field("");
+        bool no_quotes = true;
+
+        // Separate the columns based on the commas.
+        while (getline(iss, field, ','))
+        {
+            // Logic to properly read in quoted strings which may contain commas.
+            if (static_cast<size_t>(std::count(field.begin(), field.end(), '"')) % 2 != 0)
+            {
+                no_quotes = !no_quotes;
+            }
+
+            // Push each field into a vector.
+            push_field += field + (no_quotes ? "" : ",");
+
+            if (no_quotes)
+            {
+                row.push_back(push_field);
+                push_field.clear();
+            }
+        }
+
+        // Since the data is sorted by games, ends parsing once the rows pertaining to the specified game is exhausted.
+        if (found_game && stoull(row[OLD_GAME_ID], NULL, 0) != game_id)
+            break;
+
+        // Grabs the week of the play from the data.
+        week = stoi(row[WEEK]);
+
+        // Ends parsing if the row is past the specified week.
+        if(week > input_week)
+            break;
+
+        // Stores the play data if the week and the rusher name matches.
+        if (week == input_week && rusher.compare(row[RUSHER_PLAYER_NAME]) == 0)
+        {
+            // Marks that the section with the correct game is found.
+            if(!found_game)
+            {
+                found_game = true;
+                game_id = stoull(row[OLD_GAME_ID]);
+            }
+
+            // Stores all the data pertaining to the rush play, keyed and sorted by the line of scrimmage.
+            RushPlay rp(rusher, year, input_week, row);
+            rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
+        }
+    }
+}
+
+void parse_team_details(map<string, vector<string> >& team_details, ifstream& fin)
+{
+    string line;
+    bool skipped_labels = false;
+
+    // Parses through the csv file for plays belonging to the specified player in the specified week.
+    while (getline(fin, line))
+    {
+        // Skip the first row of the csv file since it's just labels.
+        if(!skipped_labels)
+        {
+            skipped_labels = true;
+            continue;
+        }
+
+        istringstream iss(line);
+        string field;
+        string abbr;
+        bool abbr_saved = false;
+
+        // Separate the columns based on the commas.
+        while (getline(iss, field, ','))
+        {
+            // Skip the first row of the csv file since it's just labels.
+            if(!abbr_saved)
+            {
+                vector<string> details;
+                abbr = field;
+                team_details.insert(pair<string, vector<string> >(abbr, details));
+                abbr_saved = true;
+                continue;
+            }
+
+            // Push each field into a vector.
+            team_details[abbr].push_back(field);
+        }
+    }
 }

@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 {
     multimap<int, RushPlay> rushes;
     vector<string> row;
+    map<string, vector<string> > team_details;
     string line;
     string rusher;
     string temp;
@@ -70,67 +71,7 @@ int main(int argc, char *argv[])
     }
 
     // Parses through the csv file for plays belonging to the specified player in the specified week.
-    while (getline(fin, line))
-    {
-        row.clear();
-
-        // Skip the first row of the csv file since it's just labels.
-        if(!skipped_labels)
-        {
-            skipped_labels = true;
-            continue;
-        }
-
-        istringstream iss(line);
-        string field;
-        string push_field("");
-        bool no_quotes = true;
-
-        // Separate the columns based on the commas.
-        while (getline(iss, field, ','))
-        {
-            // Logic to properly read in quoted strings which may contain commas.
-            if (static_cast<size_t>(std::count(field.begin(), field.end(), '"')) % 2 != 0)
-            {
-                no_quotes = !no_quotes;
-            }
-
-            // Push each field into a vector.
-            push_field += field + (no_quotes ? "" : ",");
-
-            if (no_quotes)
-            {
-                row.push_back(push_field);
-                push_field.clear();
-            }
-        }
-
-        // Since the data is sorted by games, ends parsing once the rows pertaining to the specified game is exhausted.
-        if (found_game && stoull(row[OLD_GAME_ID], NULL, 0) != game_id)
-            break;
-
-        // Grabs the week of the play from the data.
-        week = stoi(row[WEEK]);
-
-        // Ends parsing if the row is past the specified week.
-        if(week > input_week)
-            break;
-
-        // Stores the play data if the week and the rusher name matches.
-        if (week == input_week && rusher.compare(row[RUSHER_PLAYER_NAME]) == 0)
-        {
-            // Marks that the section with the correct game is found.
-            if(!found_game)
-            {
-                found_game = true;
-                game_id = stoull(row[OLD_GAME_ID]);
-            }
-
-            // Stores all the data pertaining to the rush play, keyed and sorted by the line of scrimmage.
-            RushPlay rp(rusher, year, input_week, row);
-            rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
-        }
-    }
+    parse_data(rushes, fin, input_week, rusher, year);
 
     if(rushes.size() == 0)
     {
@@ -139,8 +80,16 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // Make jgraph executable.
+    system("curl -L -o team_data.csv https://raw.githubusercontent.com/nflverse/nflfastR-data/master/teams_colors_logos.csv");
+
+    // Reads in the csv data to begin parsing.
+    ifstream fin2("team_data.csv");
+
+    parse_team_details(team_details, fin2);
+
     // Creates the jgraph using the rushing data.
-    create_jgraph(rushes);
+    create_jgraph(rushes, team_details);
     
     ostringstream oss2;
 

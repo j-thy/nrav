@@ -21,11 +21,7 @@ using namespace std;
 class RushPlay
 {
 public:
-    RushPlay(string rusher,
-             int year,
-             int week,
-             vector<string> &row);
-             
+    RushPlay(string rusher, int year, int week, vector<string> &row);
     double get_center_pos();
     double get_y_size();
     int get_y_pos();
@@ -47,5 +43,7 @@ public:
     bool fumble;
 };
 
-double rgb_converter(double rgb);
-void create_jgraph(multimap<int, RushPlay> rushes);
+double get_rgb(char rgb, string hex);
+void create_jgraph(multimap<int, RushPlay>& rushes, map<string, vector<string> >& team_details);
+void parse_data(multimap<int, RushPlay>& rushes, ifstream& fin, int input_week, string rusher, int year);
+void parse_team_details(map<string, vector<string> >& team_details, ifstream& fin);
