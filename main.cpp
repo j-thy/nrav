@@ -106,31 +106,28 @@ int main(int argc, char *argv[])
         }
 
         // Since the data is sorted by games, ends parsing once the rows pertaining to the specified game is exhausted.
-        if (found_game && stoull(row[2], NULL, 0) != game_id)
+        if (found_game && stoull(row[OLD_GAME_ID], NULL, 0) != game_id)
             break;
 
         // Grabs the week of the play from the data.
-        week = stoi(row[6]);
+        week = stoi(row[WEEK]);
 
         // Ends parsing if the row is past the specified week.
         if(week > input_week)
             break;
 
         // Stores the play data if the week and the rusher name matches.
-        if (week == input_week && rusher.compare(row[177]) == 0)
+        if (week == input_week && rusher.compare(row[RUSHER_PLAYER_NAME]) == 0)
         {
             // Marks that the section with the correct game is found.
             if(!found_game)
             {
                 found_game = true;
-                game_id = stoull(row[2]);
+                game_id = stoull(row[OLD_GAME_ID]);
             }
 
             // Stores all the data pertaining to the rush play, keyed and sorted by the line of scrimmage.
-            RushPlay rp(rusher,          // Rusher
-                        year,            // Year
-                        input_week,
-                        row); // Fumble
+            RushPlay rp(rusher, year, input_week, row);
             rushes.insert(pair<int, RushPlay>(rp.line_of_scrimmage, rp));
         }
     }

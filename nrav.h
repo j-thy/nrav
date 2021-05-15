@@ -1,6 +1,22 @@
 #include <string>
 using namespace std;
 
+#define OLD_GAME_ID 2
+#define WEEK 6
+#define RUSHER_PLAYER_NAME 177
+#define POSTEAM 7
+#define POSTEAM_TYPE 8
+#define DEFTEAM 9
+#define YARDLINE_100 11
+#define YDSTOGO 25
+#define YARDS_GAINED 29
+#define RUSH_TOUCHDOWN 156
+#define TWO_POINT_ATTEMPT 159
+#define TWO_POINT_CONV_RESULT 45
+#define FIRST_DOWN_RUSH 120
+#define TACKLED_FOR_LOSS 146
+#define FUMBLE_LOST 147
+
 // Contains the data on the rushing plays for a player.
 class RushPlay
 {

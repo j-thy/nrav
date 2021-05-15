@@ -12,17 +12,17 @@ RushPlay::RushPlay(string rusher, int year, int week, vector<string> &row)
     this->rusher = rusher;
     this->year = year;
     this->week = week;
-    posteam = row[7];
-    posteam_type = row[8].compare("home") == 0 ? "vs." : "@";
-    defteam = row[9];
-    line_of_scrimmage = stoi(row[11]);
-    rush_end = line_of_scrimmage - stoi(row[29]);
-    first_down_marker = line_of_scrimmage - stoi(row[25]);
-    rush_td = stoi(row[156]);
-    two_point = (stoi(row[159]) && row[45].compare("success") == 0) ? true : false;
-    first_down = stoi(row[120]);
-    tackled_for_loss = stoi(row[146]);
-    fumble = stoi(row[147]);
+    posteam = row[POSTEAM];
+    posteam_type = row[POSTEAM_TYPE].compare("home") == 0 ? "vs." : "@";
+    defteam = row[DEFTEAM];
+    line_of_scrimmage = stoi(row[YARDLINE_100]);
+    rush_end = line_of_scrimmage - stoi(row[YARDS_GAINED]);
+    first_down_marker = line_of_scrimmage - stoi(row[YDSTOGO]);
+    rush_td = stoi(row[RUSH_TOUCHDOWN]);
+    two_point = (stoi(row[TWO_POINT_ATTEMPT]) && row[TWO_POINT_CONV_RESULT].compare("success") == 0) ? true : false;
+    first_down = stoi(row[FIRST_DOWN_RUSH]);
+    tackled_for_loss = stoi(row[TACKLED_FOR_LOSS]);
+    fumble = stoi(row[FUMBLE_LOST]);
 }
 
 double RushPlay::get_center_pos()
