@@ -6,32 +6,31 @@
  *  Lab 3: Jgraph
  *  Overview: NFL Rushing Attempts Visualization Tool
  */
-#include <sstream>
 #include <fstream>
-#include <vector>
 #include <map>
-#include <algorithm>
+#include <sstream>
+#include <vector>
+#include <sys/stat.h>
 #include "nrav.h"
-
 
 int main(int argc, char *argv[])
 {
     multimap<int, RushPlay> rushes;
+    map<string, vector<string>> team_details;
     vector<string> row;
-    map<string, vector<string> > team_details;
     string line;
+    string output_file;
     string rusher;
     string temp;
-    string output_file_name;
     unsigned long long game_id = 0;
-    int week = 0;
     int input_week = 0;
+    int week = 0;
     int year = 0;
-    bool skipped_labels = false;
     bool found_game = false;
+    bool skipped_labels = false;
 
     // Sets the arguments from the command-line.
-    output_file_name = argv[1];
+    output_file = argv[1];
     rusher = argv[2];
     input_week = stoi(argv[3]);
     year = stoi(argv[4]);
@@ -51,7 +50,8 @@ int main(int argc, char *argv[])
     ostringstream oss;
 
     // Make jgraph executable.
-    system("chmod +x ./jgraph/jgraph");
+    chmod("jgraph/jgraph", S_IXUSR | S_IXGRP | S_IXOTH);
+
 
     // Runs curl to download the archived csv file of the NFL play-by-play data from nflfastR-data on GitHub.
     oss << "curl -L -o data.csv.gz https://raw.githubusercontent.com/guga31bb/nflfastR-data/master/data/play_by_play_" << year << ".csv.gz";
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     // Reads in the csv data to begin parsing.
     ifstream fin("data.csv");
 
-    if(fin.fail())
+    if (fin.fail())
     {
         fprintf(stderr, "ERROR: Couldn't find the data file for the given year.\n");
         remove("data.csv.gz");
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     // Parses through the csv file for plays belonging to the specified player in the specified week.
     parse_data(rushes, fin, input_week, rusher, year);
 
-    if(rushes.size() == 0)
+    if (rushes.size() == 0)
     {
         fprintf(stderr, "Rushing plays could not be found for the given inputs.\n");
         remove("data.csv");
@@ -90,11 +90,11 @@ int main(int argc, char *argv[])
 
     // Creates the jgraph using the rushing data.
     create_jgraph(rushes, team_details);
-    
+
     ostringstream oss2;
 
     // Runs the jgraph command, creating an image with the given output file name.
-    oss2 << "./jgraph/jgraph -P fbf.jgr | ps2pdf - | convert -density 300 - -quality 100 " << output_file_name << ".jpg";
+    oss2 << "./jgraph/jgraph -P fbf.jgr | ps2pdf - | convert -density 300 - -quality 100 " << output_file << ".jpg";
     system(oss2.str().c_str());
 
     // Deletes the temporary jgraph file and csv data after finished and return.

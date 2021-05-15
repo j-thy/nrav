@@ -8,6 +8,7 @@
                 "-std=c++11",
                 "-g",
                 "${file}",
+                "nrav.cpp",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
