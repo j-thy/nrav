@@ -1,6 +1,7 @@
 #include <string>
 using namespace std;
 
+// Contains the data on the rushing plays for a player.
 class RushPlay
 {
 public:
@@ -35,4 +36,6 @@ public:
     bool fumble;
 };
 
+void create_jgraph(multimap<int, RushPlay> rushes);
+double rgb_converter(double rgb);
 void create_jgraph(multimap<int, RushPlay> rushes);

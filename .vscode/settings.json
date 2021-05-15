@@ -8,6 +8,7 @@
         "vector": "cpp",
         "random": "cpp",
         "limits": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "map": "cpp"
     }
 }
