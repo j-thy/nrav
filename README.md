@@ -8,7 +8,7 @@
       <ul>
          <li>Jonathan Ting</li>
          <li>Most recent revision: Sat May 15 2021</li>
-         <li><a href="https://github.com/jonting/CS494-Lab3/tree/master">GitHub Repository</a></li>
+         <li><a href="https://github.com/jonting/nrav">GitHub Repository</a></li>
       </ul>
       <hr>
       <b>The NFL Rushing Attempts Visualization Tool (NRAV)</b> is a tool for visualizing the yardage gained and success of
@@ -95,8 +95,9 @@
       </p>
       <hr>
       <h2>NRAV Examples</h2>
-      Here are some examples of NRAV outputs and what they can tell us about a particular running back's performance in a
-      game.
+      <p>
+        Here are some examples of NRAV outputs and what they can tell us about a particular running back's performance in a game.
+      </p>
       <pre>UNIX&gt; <font color="darkred"><b>nrav Derrick-Henry-Wk-14-2018 D.Henry 14 2018</b></font></pre>
       Here is the jgraph:
       <p></p>
