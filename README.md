@@ -8,6 +8,7 @@
       <ul>
          <li>Jonathan Ting</li>
          <li>Most recent revision: Sat May 15 2021</li>
+         <li>Originally created for Fall 2020 CS 494 taught by James Plank, <a href="http://web.eecs.utk.edu/courses/fall2020/cosc594jp/labs/Lab-3-Jgraph/">Lab 3: Jgraph</a></li>
          <li><a href="https://github.com/jonting/nrav">GitHub Repository</a></li>
       </ul>
       <hr>
