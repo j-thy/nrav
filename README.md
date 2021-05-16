@@ -66,7 +66,7 @@
       <h2>Installing NRAV</h2>
       <p>
          <b>NRAV</b> makes calls to <b>curl</b> (downloading the raw archived .csv file from GitHub) and <b>gunzip</b>
-         (decompressing the archive into a .csv file). <b>jgraph</b>, used in NRAV, also makes calls to <b>ps2pdf</b> (converting the PostScript jgraph outputs to PDF) and <b>convert</b> (converting the PDF to JPEG).
+         (decompressing the archive into a .csv file). <b>jgraph</b>, a graphing package created by James Plank and used in NRAV, also makes calls to <b>ps2pdf</b> (converting the PostScript jgraph outputs to PDF) and <b>convert</b> (converting the PDF to JPEG).
       </p>
       <p>
          These programs need to be installed as a prerequisite. You can install these with the following command on Debian-based systems:
@@ -96,7 +96,7 @@
       <hr>
       <h2>NRAV Examples</h2>
       <p>
-        Here are some examples of NRAV outputs and what they can tell us about a particular running back's performance in a game.
+         Here are some examples of NRAV outputs and what they can tell us about a particular running back's performance in a game.
       </p>
       <pre>UNIX&gt; <font color="darkred"><b>nrav Derrick-Henry-Wk-14-2018 D.Henry 14 2018</b></font></pre>
       Here is the jgraph:
