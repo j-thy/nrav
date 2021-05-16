@@ -6,10 +6,6 @@
  *  Lab 3: Jgraph
  *  Overview: NFL Rushing Attempts Visualization Tool
  */
-#include <fstream>
-#include <map>
-#include <sstream>
-#include <vector>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "nrav.h"
@@ -19,6 +15,8 @@ int main(int argc, char *argv[])
     multimap<int, RushPlay> rushes;
     map<string, vector<string>> team_details;
     vector<string> row;
+    ifstream fin;
+    ostringstream oss;
     string line;
     string output_file;
     string rusher;
@@ -36,21 +34,21 @@ int main(int argc, char *argv[])
     input_week = stoi(argv[3]);
     year = stoi(argv[4]);
 
+    // Checks if the week is within range.
     if (input_week < 1 || input_week > 21)
     {
         fprintf(stderr, "ERROR: Week must be inbetween 1-21 (inclusive).\n");
         return 1;
     }
 
+    // Checks if the season is within range.
     if (year < 1999)
     {
         fprintf(stderr, "ERROR: Play-by-play data only goes back as far as 1999.\n");
         return 1;
     }
 
-    ostringstream oss;
-
-    // Make jgraph executable.
+    // Makes jgraph executable.
     if (access("jgraph/jgraph", X_OK))
     {
         printf("Making jgraph executable...\n");
@@ -67,8 +65,7 @@ int main(int argc, char *argv[])
     system("gunzip -f data.csv.gz");
 
     // Reads in the csv data to begin parsing.
-    ifstream fin("data.csv");
-
+    fin.open("data.csv");
     if (fin.fail())
     {
         fprintf(stderr, "ERROR: Couldn't find the data file for the given year.\n");
@@ -79,38 +76,45 @@ int main(int argc, char *argv[])
     // Parses through the csv file for plays belonging to the specified player in the specified week.
     printf("Parsing data for rushing plays from %s in week %d of the %d NFL season...\n", rusher.c_str(), input_week, year);
     parse_data(rushes, fin, input_week, rusher, year);
-
+    fin.close();
     if (rushes.size() == 0)
     {
-        fprintf(stderr, "Rushing plays could not be found for the given inputs.\n");
+        fprintf(stderr, "ERROR: Rushing plays could not be found for the given inputs.\n");
         remove("data.csv");
         return 1;
     }
 
-    // Make jgraph executable.
+    // Runs curl to download the data for team names and colors.
     printf("Downloading team data...\n");
     system("curl -s -S -L -o team_data.csv https://raw.githubusercontent.com/nflverse/nflfastR-data/master/teams_colors_logos.csv");
 
-    // Reads in the csv data to begin parsing.
-    ifstream fin2("team_data.csv");
-
-    parse_team_details(team_details, fin2);
+    // Parses the csv file for team names and colors.
+    fin.open("team_data.csv");
+    parse_team_details(team_details, fin);
+    if (team_details.size() == 0)
+    {
+        fprintf(stderr, "ERROR: Team data could not be found.\n");
+        remove("team_data.csv");
+        return 1;
+    }
+    fin.close();
 
     // Creates the jgraph using the rushing data.
     printf("Creating the graph...\n");
     create_jgraph(rushes, team_details);
 
-    ostringstream oss2;
-
     // Runs the jgraph command, creating an image with the given output file name.
-    oss2 << "./jgraph/jgraph -P fbf.jgr | ps2pdf - | convert -density 300 - -quality 100 " << output_file << ".jpg";
-    system(oss2.str().c_str());
+    oss.str("");
+    oss << "./jgraph/jgraph -P temp.jgr | ps2pdf - | convert -density 300 - -quality 100 " << output_file << ".jpg";
+    system(oss.str().c_str());
 
     // Deletes the temporary jgraph file and csv data after finished and return.
     printf("Cleaning up...\n");
-    remove("fbf.jgr");
+    remove("temp.jgr");
     remove("data.csv");
+    remove("team_data.csv");
 
+    // Program ends.
     printf("Finished creating the graph at %s.jpg.\n", output_file.c_str());
     return 0;
 }

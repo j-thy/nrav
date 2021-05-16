@@ -1,4 +1,9 @@
 #include <string>
+#include <sstream>
+#include <map>
+#include <fstream>
+#include <vector>
+#include <algorithm>
 using namespace std;
 
 #define OLD_GAME_ID 2
@@ -17,7 +22,7 @@ using namespace std;
 #define TACKLED_FOR_LOSS 146
 #define FUMBLE_LOST 147
 
-// Contains the data on the rushing plays for a player.
+// Contains the data on a rushing play.
 class RushPlay
 {
 public:
@@ -43,7 +48,20 @@ public:
     bool fumble;
 };
 
+struct Rgb
+{
+    double red;
+    double green;
+    double blue;
+};
+
+struct TeamName
+{
+    string pos;
+    string def;
+};
+
 double get_rgb(char rgb, string hex);
-void create_jgraph(multimap<int, RushPlay>& rushes, map<string, vector<string> >& team_details);
-void parse_data(multimap<int, RushPlay>& rushes, ifstream& fin, int input_week, string rusher, int year);
-void parse_team_details(map<string, vector<string> >& team_details, ifstream& fin);
+void create_jgraph(multimap<int, RushPlay> &rushes, map<string, vector<string>> &team_details);
+void parse_data(multimap<int, RushPlay> &rushes, ifstream &fin, int input_week, string rusher, int year);
+void parse_team_details(map<string, vector<string>> &team_details, ifstream &fin);

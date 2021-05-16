@@ -11,4 +11,4 @@ $(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	$(RM) $(TARGET)
+	$(RM) *.o $(TARGET)
